@@ -1,4 +1,4 @@
-
+import json
 
 
 class File:
@@ -121,6 +121,7 @@ def show_help():
     print("     cat <file>")
     print("     status")
     print("     login <user> <password>")
+    print("     save <name>")
     print("     exit")
 
 
@@ -213,6 +214,52 @@ def login(username, password):
         print("Wrong credentials")
 
 
+def save_game(name):
+
+    if current_server is None or current_user is None:
+        print("Nothing to save")
+        return
+    
+    data = {
+        "server": current_server.ip,
+        "user": current_user.username
+    }
+
+    with open(f"{name}.json", "w") as file:
+        json.dump(data, file)
+
+    print("Game saved")
+
+
+
+def load_game(name):
+
+    global current_server
+    global current_user
+    global logged_in
+
+    with open(f"{name}.json", "r") as file:
+        data = json.load(file)
+
+    server_ip = data["server"]
+    username = data["user"]
+
+    for server in servers:
+
+        if server.ip == server_ip:
+
+            current_server = server
+            for user in current_server.users:
+
+                if user.username == username:
+
+                    current_user = user
+                    logged_in = True
+                    print("Game loaded")
+                    return
+
+
+
 
 print("BLACKNODE TERMINAL")
 
@@ -266,6 +313,20 @@ while True:
             username = parts[1]
             password = parts[2]
             login(username, password)
+
+    elif action == "save":
+        if len(parts) < 2:
+            print("Usage: save <name>")
+
+        name = parts[1]
+        save_game(name)
+
+    elif action == "load":
+        if len(parts) < 2:
+            print("Usage: load <name>")
+
+        name = parts[1]
+        load_game(name)
 
     elif action == "exit":
         break
