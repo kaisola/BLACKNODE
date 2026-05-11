@@ -1,31 +1,52 @@
-print("BLACKNODE TERMINAL")
 
 
-current_server = None
+class Server:
+
+    def __init__(self, ip, password, files):
+        self.ip = ip
+        self.password = password
+        self.files = files
+
+
+
+    def show_files(self):
+
+        for file_name in self.files:
+            print(file_name)
+
+
+
+    def read_file(self, filename):
+
+        if filename in self.files:
+            print(self.files[filename])
+        else:
+            print("File not found")
 
 servers = [
-    {
-        "ip": "192.168.0.44",
-        "password": "qwerty",
+    
+    Server(
+        "192.168.0.44",
+        "qwerty",
 
-        "files": {
+        {
             "notes.txt": "change password before friday",
-
             "warning.log": "DO NOT OPEN NODE-3"
         }
-    },
+    ),
 
-    {
-        "ip": "192.168.0.23",
-        "password": "admin"
-    },
+    Server(
+        "192.168.0.23",
+        "admin",
 
-    {
-        "ip": "192.168.0.123",
-        "password": "helloworld"
-    }
+        {
+            "mail.txt": "meeting tomorrow"
+        }
+    )
 
 ]
+
+current_server = None
 
 
 
@@ -33,23 +54,30 @@ servers = [
 def show_help():
 
     print("Available commands:")
+    print("help")
     print("scan")
-    print("connect")
+    print("connect <ip>")
     print("ls")
-    print("cat")
+    print("cat <file>")
+    print("status")
+    print("exit")
+
+
 
 def scan():
 
-    print("Scanning...")
+    print("Scanning...\n")
     for server in servers:
-        print(f"Found server: {server["ip"]}")
+        print(f"Found server: {server.ip}")
+
+
 
 def connect(ip):
 
     global current_server
 
     for server in servers:
-        if server["ip"] == ip:
+        if server.ip == ip:
 
             current_server = server
 
@@ -58,12 +86,17 @@ def connect(ip):
         
     print("Server not found")
 
+
+
 def status():
 
     if current_server:
-        print(current_server["ip"])
+        print(current_server.ip)
     else:
         print("Not connected")
+
+
+
 
 def ls():
 
@@ -71,29 +104,31 @@ def ls():
         print("Not connected")
         return
     
-    files = current_server["files"]
+    current_server.show_files()
 
-    for file_name in files:
-        print(file_name)
+
 
 def cat(filename):
 
-    if current_server:
-        print(current_server["ip"])
-    else:
+    if current_server is None:
         print("Not connected")
+        return
+    
+    current_server.read_file(filename)
 
-    files = current_server["files"]
 
-    if filename in files:
-        print(files[filename])
-    else:
-        print("File not found")
+
+print("BLACKNODE TERMINAL")
 
 
 while True:
+
     command = input("> ")
     parts = command.split()
+
+    if len(parts) == 0:
+        continue
+
     action = parts[0]
 
     if action == "help":
@@ -122,6 +157,9 @@ while True:
         else:
             filename = parts[1]
             cat(filename)
+
+    elif action == "status":
+        status()
 
     elif action == "exit":
         break
