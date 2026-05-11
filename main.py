@@ -52,6 +52,21 @@ class Server:
         else:
             print("File not found")
 
+
+class SecureServer(Server):
+    
+    def __init__(self, ip, users, files, security_level):
+        super().__init__(ip, users, files)
+
+        self.security_level = security_level
+
+    def show_files(self):
+
+        print("SECURE SERVER")
+        super().show_files()
+
+
+
 servers = [
     
     Server(
@@ -93,7 +108,14 @@ servers = [
 
     Server(
         "192.168.0.23",
-        "admin",
+        
+        [
+            User(
+                "admin",
+                "admin",
+                "admin"
+            )
+        ],
 
         {
             "mail.txt": File(
@@ -101,6 +123,29 @@ servers = [
                 "meeting tomorrow"
             ),
         }
+    ),
+
+    SecureServer(
+
+        "192.168.0.99",
+
+        [
+            User(
+                "root",
+                "admin",
+                "admin"
+            )
+        ],
+
+        {
+            "vault.txt": File(
+                "vault.txt",
+                "ENCRYPTED DATA",
+                True
+            )
+        },
+
+        5
     )
 
 ]
@@ -155,11 +200,14 @@ def connect(ip):
 
 def status():
 
-    if current_server:
-        print(current_server.ip)
-    else:
+    if current_server is None:
         print("Not connected")
+        return
 
+    print(f"Connected to: {current_server.ip}")
+
+    if isinstance(current_server, SecureServer):
+        print(f"Security level: {current_server.security_level}")
 
 
 
@@ -317,16 +365,16 @@ while True:
     elif action == "save":
         if len(parts) < 2:
             print("Usage: save <name>")
-
-        name = parts[1]
-        save_game(name)
+        else:
+            name = parts[1]
+            save_game(name)
 
     elif action == "load":
         if len(parts) < 2:
             print("Usage: load <name>")
-
-        name = parts[1]
-        load_game(name)
+        else:
+            name = parts[1]
+            load_game(name)
 
     elif action == "exit":
         break
