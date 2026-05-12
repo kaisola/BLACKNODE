@@ -27,6 +27,9 @@ class Server:
         self.users = users
         self.files = files
 
+        self.failed_attempts = 0
+        self.locked = False
+
 
 
     def show_files(self):
@@ -209,6 +212,9 @@ def status():
     if isinstance(current_server, SecureServer):
         print(f"Security level: {current_server.security_level}")
 
+    print(f"Failed attempts: {current_server.failed_attempts}")
+    print(f"Locked: {current_server.locked}")
+
 
 
 def ls():
@@ -248,18 +254,31 @@ def login(username, password):
         print("Not connected")
         return
     
+    if current_server.locked:
+        print("SERVER LOCKED")
+        return
+    
     for user in current_server.users:
 
         if user.username == username and user.password == password:
 
             logged_in = True
             current_user = user
+            
+            current_server.failed_attempts = 0
 
             print(f"Access granted: {user.role}")
             return
         
-    else:
-        print("Wrong credentials")
+        
+    current_server.failed_attempts += 1
+
+    print("Wrong credentials")
+    print(f"Attempts: {current_server.failed_attempts}/3")
+
+    if current_server.failed_attempts >= 3:
+        current_server.locked = True
+        print("SERVER LOCKED")
 
 
 def save_game(name):
